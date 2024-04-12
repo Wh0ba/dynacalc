@@ -1,7 +1,7 @@
-
-
 class Tokenizer {
-  static List<String> tokenize(String input) {
-    return input.split(' ');
+  static List<List<String>> tokenize(String input) {
+    
+    final lines = input.split('\n');
+    return lines.map((line) => line.split(' ')).toList();
   }
 }
