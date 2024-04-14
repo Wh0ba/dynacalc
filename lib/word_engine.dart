@@ -17,6 +17,7 @@ class WordEngine {
     }
   }
 
+
   num getTotal() {
     if (numbers.isEmpty) {
       return 0;
