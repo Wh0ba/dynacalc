@@ -1,5 +1,8 @@
+import 'package:dynacalc/expression_analyzer.dart';
 import 'package:dynacalc/word_engine.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -10,57 +13,112 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late final WordEngine wordEngine;
-  late final NumberColorizer _controller;
+
+  final List<String> fields = [''];
+  final Map<int, String> units = {0: ''};
+  late List<NumberColorizer> controllers = [];
+  //key is the index of the field, while num is the value of the evaluated expression
   final Map<int, num> numbers = {};
+
   @override
   void initState() {
+    controllers = fields.map((e) => NumberColorizer()).toList();
     wordEngine = WordEngine();
-    _controller = NumberColorizer();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        appBar: AppBar(title: const Text('DynaCalc')),
-        body: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Text(
-                'Total: ${wordEngine.getTotal()}',
-                style: const TextStyle(fontSize: 20),
-              ),
-              SizedBox(
-                height: MediaQuery.sizeOf(context).height / 1.5,
-                child: TextField(
-                  onChanged: (value) {
-                    if (value.isEmpty) {
-                      setState(() {
-                        wordEngine.numbers.clear();
-                      });
-                      return;
-                    }
-                    setState(() {
-                      wordEngine.processString(value);
-                    });
-                  },
-                  expands: true,
-                  maxLines: null,
-                  controller: _controller,
-                  textAlignVertical: TextAlignVertical.top,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(8))),
-                    hintText: 'Enter your expression here',
+    return Scaffold(
+      appBar: AppBar(title: const Text('DynaCalc')),
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Expanded(
+              child: Stack(
+                children: [
+                  Positioned(
+                    left: MediaQuery.of(context).size.width / 1.7,
+                    right: 0,
+                    top: 0,
+                    bottom: 0,
+                    child: Container(
+                      decoration: const BoxDecoration(
+                          border: Border(
+                            left: BorderSide(width: 1),
+                          ),
+                          color: Color(0xFFF4F5F5)),
+                    ),
                   ),
-                ),
+                  ListView.builder(
+                    itemBuilder: (context, index) {
+                      return Row(
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width / 1.7,
+                            child: (index == fields.length)
+                                ? ListTile(
+                                    title: IconButton(
+                                      icon: const Icon(
+                                          Icons.add_circle_outline_sharp),
+                                      onPressed: () {
+                                        setState(() {
+                                          fields.add('');
+                                          controllers.add(NumberColorizer());
+                                        });
+                                      },
+                                    ),
+                                  )
+                                : TextField(
+                                    controller: controllers[index],
+                                    onChanged: (value) {
+                                      if (value.isEmpty) {
+                                        setState(() {
+                                          numbers.remove(index);
+                                        });
+                                        return;
+                                      }
+                                      setState(() {
+                                        final result = ExpressionAnalyzer
+                                            .analyzeAndEvaluate(value,
+                                                (currencyPrefix) {
+                                          setState(() {
+                                            units[index] = currencyPrefix;
+                                          });
+                                        });
+                                        if (result != null) {
+                                          numbers[index] = result;
+                                        } else {
+                                          numbers.remove(index);
+                                        }
+                                      });
+                                    },
+                                    // controller: NumberColorizer(),
+                                    textAlignVertical: TextAlignVertical.top,
+                                    decoration: const InputDecoration(
+                                      border: null,
+                                      hintText: '',
+                                    ),
+                                  ),
+                          ),
+                          Expanded(
+                              child: Padding(
+                            padding: const EdgeInsets.only(left: 10),
+                            child: Text(
+                                '${units[index] ?? ''} ${numbers[index] ?? ''}'),
+                          ))
+                        ],
+                      );
+                    },
+                    itemCount: fields.length + 1,
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
