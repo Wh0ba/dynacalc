@@ -1,8 +1,5 @@
 import 'package:dynacalc/expression_analyzer.dart';
-import 'package:dynacalc/word_engine.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -12,7 +9,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  late final WordEngine wordEngine;
 
   final List<String> fields = [''];
   final Map<int, String> units = {0: ''};
@@ -23,7 +19,6 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     controllers = fields.map((e) => NumberColorizer()).toList();
-    wordEngine = WordEngine();
     super.initState();
   }
 
