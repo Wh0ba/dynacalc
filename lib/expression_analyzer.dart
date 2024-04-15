@@ -11,7 +11,7 @@ class ExpressionAnalyzer {
   static num? analyzeAndEvaluate(
       String input, Function(String prefix) onPrefix) {
     final matchParentheses = _parenthesesRegex.firstMatch(input);
-    
+
     if (matchParentheses != null) {
       final expression = matchParentheses.group(0)!;
       final evaluated =
@@ -26,7 +26,7 @@ class ExpressionAnalyzer {
       }
 
       _handlePrefix(input, matches.first, onPrefix);
-
+      input = input.replaceAll(RegExp(r'(\$|\₺|\€|\£)'), '');
       if (matches.first.end < input.length) {
         final secondExpression = _percentageRegex.firstMatch(input);
         if (secondExpression != null) {
@@ -36,16 +36,24 @@ class ExpressionAnalyzer {
         }
       }
 
-      if (matches.length == 2) {
+      if (matches.length >= 2) {
         final percentageIndex = input.indexOf('%');
         if (percentageIndex != -1 && percentageIndex < matches.first.end + 1) {
-          final n1 = num.parse(input.substring(matches.first.start, percentageIndex));
-          final n2 = num.parse(matches.last.group(0)!);
+          final n1 =
+              num.parse(input.substring(matches.first.start, percentageIndex));
+          final n2 = num.parse(matches[1].group(0)!);
           final result = (n1 / 100) * n2;
           return result;
-
         }
-        final expression = ExpressionCleaner.removeNonMathematicalTerms(input);
+        final forIndex = input.indexOf('for');
+        if (forIndex != -1 &&
+            forIndex > matches.first.start &&
+            forIndex < matches[1].end) {
+          input = input.replaceFirst('for', '*', forIndex);
+          final result = analyzeAndEvaluate(input, onPrefix);
+          return result;
+        }
+        final expression = ExpressionCleaner.removeNonMathematicalTerms(input.substring(matches.first.start, matches.first.end));
         final evaluated = _evaluateExpression(expression);
         return evaluated;
       }
