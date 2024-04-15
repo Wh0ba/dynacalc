@@ -1,5 +1,4 @@
 import 'package:dynacalc/expression_cleaner.dart';
-import 'package:flutter/foundation.dart';
 import 'package:math_expressions/math_expressions.dart';
 
 class ExpressionAnalyzer {
@@ -38,7 +37,7 @@ class ExpressionAnalyzer {
         final secondExpression =
             secondExpressionPrecentageRegex.firstMatch(input);
         if (secondExpression != null) {
-          String s = secondExpression.group(0)!.toString() ?? 'null';
+          
           final secondExp =
               input.substring(secondExpression.start, secondExpression.end - 1);
           final firstExp =
@@ -48,9 +47,9 @@ class ExpressionAnalyzer {
             final secondNum = num.parse(secondExp);
             final result = num.parse(((firstNum / 100) * secondNum).toStringAsFixed(2));
             
-            s = matches.first.group(0)!.replaceRange(
+            String replacedMatch = matches.first.group(0)!.replaceRange(
                 matches.first.group(0)!.indexOf(RegExp(r'([-+^\/*])')) + 1, null, result.toString());
-            final evaluated = _evaluateExpression(s);
+            final evaluated = _evaluateExpression(replacedMatch);
             if (evaluated != null) {
               return evaluated;
             } else {
@@ -63,10 +62,7 @@ class ExpressionAnalyzer {
       }
       if (matches.length == 2) {
         final expression = ExpressionCleaner.removeNonMathematicalTerms(input);
-        // final expression1 = matches.first.group(0)!;
-        // final expression2 = matches.last.group(0)!;
         final evaluated1 = _evaluateExpression(expression);
-        // final evaluated2 = _evaluateExpression(expression2);
         if (evaluated1 != null) {
           return evaluated1;
         } else {
